@@ -49,11 +49,11 @@ class FoodRecognitionUsecase:
             input_image_width,
             input_image_height,
             input_image_channel,
-            max_samples=1500
+            max_samples=99999
         )
 
         # モデルを学習する
-        history = classifier.train(model, dataset, 10, 5)
+        history = classifier.train(model, dataset, 10, 20)
 
         # モデルを評価する
         # classifier.evaluate(model, (dataset[1], dataset[3]))

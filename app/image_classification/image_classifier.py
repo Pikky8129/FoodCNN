@@ -82,19 +82,43 @@ class ImageClassifier(AppBase):
             モデル
         """
 
-        # モデルを定義する
-        model = Sequential()
+        # # モデルを定義する
+        # model = Sequential()
+        #
+        # # レイヤーを定義する
+        # model.add(layers.Conv2D(64, (4, 4), padding='same', activation='relu',
+        #                         input_shape=(input_image_height, input_image_width, input_image_channel)))
+        # model.add(layers.Conv2D(64, (4, 4), padding='same', activation='relu'))
+        # model.add(layers.Conv2D(64, (4, 4), padding='same', activation='relu'))
+        # model.add(layers.MaxPooling2D(pool_size=(4, 4)))
+        # model.add(layers.Flatten())
+        # model.add(layers.Dense(64, activation='relu'))
+        # model.add(layers.Dense(64, activation='relu'))
+        # model.add(layers.Dense(output_dimensions, activation='softmax'))
+        #
+        # # モデルをコンパイルする
+        # model.compile(loss='categorical_crossentropy', optimizer=Adam(), metrics=['accuracy'])
 
-        # レイヤーを定義する
-        model.add(layers.Conv2D(64, (4, 4), padding='same', activation='relu',
-                                input_shape=(input_image_height, input_image_width, input_image_channel)))
-        model.add(layers.Conv2D(64, (4, 4), padding='same', activation='relu'))
-        model.add(layers.Conv2D(64, (4, 4), padding='same', activation='relu'))
-        model.add(layers.MaxPooling2D(pool_size=(4, 4)))
-        model.add(layers.Flatten())
-        model.add(layers.Dense(64, activation='relu'))
-        model.add(layers.Dense(64, activation='relu'))
-        model.add(layers.Dense(output_dimensions, activation='softmax'))
+        # MobileNetのモデルと重みをインポート
+        base_model = MobileNet(
+            include_top=False,          # 全結合層を除外
+            weights='imagenet',
+            input_shape=(input_image_height, input_image_width, input_image_channel)
+        )
+
+        # 畳み込み層の重みを固定
+        for layer in base_model.layers:
+            layer.trainable = False
+
+        # MobileNetの畳み込み層に全結合層を追加
+        model = Sequential()
+        model.add(base_model)
+        model.add(layers.GlobalAveragePooling2D())
+        model.add(layers.Dropout(0.25))
+        model.add(layers.Dense(1024, activation='relu'))
+        model.add(layers.Dense(1024, activation='relu'))
+        model.add(layers.Dropout(0.25))
+        model.add(layers.Dense(output_dimensions, activation="softmax"))
 
         # モデルをコンパイルする
         model.compile(loss='categorical_crossentropy', optimizer=Adam(), metrics=['accuracy'])
